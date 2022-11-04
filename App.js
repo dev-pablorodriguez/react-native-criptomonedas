@@ -4,6 +4,7 @@ import {
   Image,
   View,
   ScrollView,
+  Alert,
   Text,
   ActivityIndicator
 } from 'react-native';
@@ -15,29 +16,30 @@ import Cotizacion from './components/Cotizacion';
 const App = () => {
   const [moneda, setMoneda] = useState('');
   const [criptomoneda, setCriptomoneda] = useState('');
-  const [consultarAPI, setConsultarAPI] = useState(false);
   const [result, setResult] = useState({});
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect( () => {
-    const cotizarCriptomoneda = async () => {
-      if(consultarAPI){
-
-        setIsLoading(true);
-
-        const url = `https://min-api.cryptocompare.com/data/pricemultifull?fsyms=${ criptomoneda }&tsyms=${ moneda }`;
-        const response = await axios.get(url);
-        
-        //Custom wait time to see the loader
-        setTimeout(() => {
-          setResult(response.data.DISPLAY[ criptomoneda ][ moneda ]);
-          setConsultarAPI(false);
-          setIsLoading(false);
-        }, 2000);
-      }
+  const cotizarPrecio = () => {
+    if(moneda.trim() === '' || criptomoneda.trim() === ''){
+      Alert.alert('Error', 'Ambos campos son obligatorios.');
+      return;
     }
+
+    const cotizarCriptomoneda = async () => {
+      setIsLoading(true);
+
+      const url = `https://min-api.cryptocompare.com/data/pricemultifull?fsyms=${ criptomoneda }&tsyms=${ moneda }`;
+      const response = await axios.get(url);
+      
+      //Custom wait time to see the loader
+      setTimeout(() => {
+        setResult(response.data.DISPLAY[ criptomoneda ][ moneda ]);
+        setIsLoading(false);
+      }, 2000);
+    }
+
     cotizarCriptomoneda();
-  }, [ consultarAPI ])
+  }
 
   const renderedComponent =
     isLoading ? <ActivityIndicator size='large' color='#5E49E2' style={{ marginTop: 20 }}/> :
@@ -57,7 +59,7 @@ const App = () => {
           setMoneda={ setMoneda }
           criptomoneda={ criptomoneda }
           setCriptomoneda={ setCriptomoneda }
-          setConsultarAPI={ setConsultarAPI }
+          cotizarPrecio={ cotizarPrecio }
         />
       </View>
 
